@@ -1,0 +1,188 @@
+At DataBase
+-----------------------------
+create table student (
+sno int, 
+sname varchar(30),
+simage varchar(1000))
+
+
+Angular App
+--------------------------
+Create a Models Folder >> add a file Student.ts with a class 
+
+export class Student{
+    sno: number;
+    sname : string;
+    simage: any;
+} 
+
+
+At Angular Component 
+-------------------------------
+.html File 
+
+<form [formGroup]="frmGrp1">
+<div>
+sno : <input type="text" formControlName="sno" />
+sname: <input type="text" formControlName="sname" />
+Image : <img  [src]="url" width="100px" height="100px" />
+<input  type='file' (change)="onSelectFile($event)" />
+<button (click)="btnSubmit()">Submit</button>
+</div>
+</form>
+
+
+.ts File 
+
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormBuilder } from '@angular/forms'
+import { Student} from '../models/student'
+import {StudentService} from '../services/student.service'
+@Component({
+    selector: 'app-sample-img',
+    templateUrl: './sample-img.component.html',
+    styleUrls: ['./sample-img.component.css']
+})
+export class SampleImgComponent implements OnInit {
+    private url: '';
+    private frmGrp1: FormGroup;
+    private fb: FormBuilder;
+    private std : Student;
+    constructor(private stdServ : StudentService) {
+        this.fb = new FormBuilder();
+        this.std = new Student();
+
+    }
+
+    onSelectFile(event) {
+        if (event.target.files && event.target.files[0]) {
+            var reader = new FileReader();
+            reader.readAsDataURL(event.target.files[0]); // read file as data url
+            reader.onload = (ev: any) => { // called once readAsDataURL is completed
+                this.url = ev.target.result;
+                this.std.simage = reader.result;
+            }
+        }
+    }
+
+    btnSubmit() {
+        this.std.sno= this.frmGrp1.controls["sno"].value;
+        this.std.sname =this.frmGrp1.controls["sname"].value;
+        this.std.simage =  this.std.simage.replace("data:image/gif;base64,","");
+        this.std.simage =  this.std.simage.replace("data:image/jpeg;base64,","");
+        console.log(this.std.simage);
+        //console.log(this.frmGrp1);
+        this.stdServ.SaveStudent(this.std).subscribe(data=>console.log(data));
+    }
+
+    ngOnInit() {
+        this.frmGrp1 = this.fb.group({
+            sno: [''],
+            sname: [''],
+        })
+    }
+}
+
+
+
+Student Service 
+--------------------
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { Observable } from 'rxjs'
+import { Student } from '../models/student';
+@Injectable({
+    providedIn: 'root'
+})
+export class EmployeeService {
+
+    constructor(private http: HttpClient) {
+    }
+
+    GetAllStudents():Observable<any>
+    {
+    return this.http.get('http://localhost:4500/student',{responseType:'json'})
+    }
+    SaveStudent(std: Student) : Observable<any> {
+        console.log(std);
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this.http.post('http://localhost:4500/student', JSON.stringify(std), httpOptions)
+    }
+}
+
+
+
+NodeServer REST API
+------------------------
+ 
+var promise = require('bluebird');
+var bodyParser = require('body-parser')
+var options = { promiseLib: promise }
+var pgp = require('pg-promise')(options);
+var express = require('express');
+var app = new express();
+var fs = require('fs');
+var path = require('path');
+
+app.use(express.static(path.join(__dirname, 'public')));  
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+
+var cs = 'postgres://postgres:rama@123@localhost:5432/ossbatch1';
+var db = pgp(cs);
+
+
+app.all("*", function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With");
+    res.header("Access-Control-Allow-Methods", "*");
+    return next();
+});
+
+app.get('/student', (req, res, next) => {
+
+    db.any('select * from myStudent').then(function (data) {
+        res.send(data);
+    }) 
+})
+
+app.get('/student/:id', (req, res, next) => {
+    var i = req.params.id;
+    db.any('select * from myStudent where sno = $1', i).then(function (data) {
+        res.send(data);
+    })
+})
+
+app.post('/student', (req, res, next) => {
+    var data = req.body.simage
+    var n = req.body.sno;
+    var nm = req.body.sname
+    var pt = '';
+    var dt = new Date();
+    ptr = dt.getFullYear() +""+ dt.getMonth()+"" + dt.getMilliseconds()+'.png';
+    pts = './public/'+ ptr;
+     fs.writeFile(pts, data,'base64', (err) => {
+        if(err)
+        console.log(err)
+        else{
+            console.log('Image Svaed Success...');
+        }
+    });
+
+    ptr = 'http://localhost:4500/'+ptr;
+    db.none('insert into myStudent values($1,$2,$3)', [n, nm,ptr])
+        .then(function () {
+            res.status(200).send({ message: "Record Inserted Succexxx.." });
+        })
+})
+
+app.listen(4500, (err) => {
+    if (err)
+        console.log('Server Cant Start ...Erorr....');
+    else
+        console.log('Server Started at : http://localhost:4500')
+})
+

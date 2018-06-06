@@ -1,0 +1,65 @@
+
+Login Component.ts 
+----------------------------
+
+
+btnLogin() {
+        
+	let u = this.frmGrp.controls["txtUname"].value;
+        
+	let p = this.frmGrp.controls["txtPwd"].value
+        
+	if (u == "unic" && p == "pwd") 
+	{
+            
+		localStorage.setItem("uname",u);
+            
+		this.route.navigate(['/home'])
+        
+	 }
+    
+	}
+
+
+
+
+appcomponent.html - Navbar 
+---------------------------------
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+    <ul class="navbar-nav">
+          <a class="nav-link" *ngIf="checkLogin" routerLink="searchEmployee">SearchEmployee</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" *ngIf="checkLogin" routerLink="showAllEmployee">ShowAllEmployee</a>
+        </li>
+        <li class="nav-item">
+
+            <a class="nav-link" *ngIf="checkLogin" routerLink="displayStudent">DispalyStudent</a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link" *ngIf="checkLogin">LogOut</a>
+        </li>
+    </ul>
+</nav>
+
+
+appComponent.ts 
+----------------------------------
+export class AppComponent implements OnInit {
+    
+	private checkLogin: string;
+    
+	
+	constructor() {
+    
+		}
+
+  
+	ngOnInit() {
+        
+		this.checkLogin = localStorage.getItem("uname");
+    
+	  	}
+
+	}

@@ -1,0 +1,85 @@
+
+AppComponent.ts
+--------------------------
+import { Observable } from 'rxjs'
+import { of } from 'rxjs'
+
+
+export class AppComponent implements DoCheck {
+
+    lsValue: Observable<string>
+
+    constructor() {
+    }
+
+    private CheckLocalStore(): Observable<any> {
+        return of(localStorage.getItem("uname"));
+    }
+
+
+    lnkLogoutClick()
+    {
+        localStorage.removeItem("uname")
+    }
+
+    ngDoCheck() {
+        this.CheckLocalStore().subscribe((data) => { this.lsValue = data })
+    }
+
+}
+
+
+
+LoginComponent
+-----------------
+import { Component, OnInit } from '@angular/core';
+import { BookService } from '../services/book.service'
+import { Router } from '@angular/router'
+
+export class LoginComponent implements OnInit {
+    uid: string = "";
+    pwd: string = "";
+    constructor(private bs: BookService, private router: Router) { }
+    btnLoginClick(frm: any) {
+
+        this.bs.CheckLogin(this.uid, this.pwd).subscribe((data) => {
+            if (data.length > 0) {
+                localStorage.setItem("uname", this.uid)
+                this.router.navigate(['/Home'])
+            }
+            else {
+                alert('Invalid User...')
+            }
+        })
+    }
+
+    ngOnInit() {
+    }
+
+}
+
+
+Service.ts
+------------------
+Method    
+CheckLogin(u: string, p : string) : Observable<any>{
+        let usr : User;
+        usr = new User();
+        usr.uid = u;
+        usr.pwd= p;
+        return this.hc.get('http://localhost:3600/Users/'+ usr.uid+'/'+usr.pwd,this.httpOptions);
+    }
+
+
+
+at Rest API 
+-----------------------
+app.get('/Users/:id/:pwd', (req, res, next) => {
+    var u = req.params.id;
+    var p = req.params.pwd;
+    console.log(u + " " + p);
+    db.any('select * from tbl_user where uid = $1 and pwd = $2', [u, p])
+        .then((data) => {
+            res.send(data);
+        })
+});

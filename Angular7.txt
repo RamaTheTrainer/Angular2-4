@@ -1,0 +1,112 @@
+update to angular7
+--------------------------------
+https://update.angular.io/
+
+
+
+Angular7 new Features
+---------------------------------
+1) CLI Prompts 
+
+2) Virtual Scrolling
+
+3) DragDropModule
+
+4) BudgetBundles
+
+5) Updated Dependencies 
+	typescript 3.1, rxjs 6.3, node 10 versions
+
+6) DoBootstrap Lifecycle hook
+
+Virtual Scrolling
+steps
+	npm install @angular/cdk@latest --save	
+	At AppModule.ts File 
+		import { ScrollingModule } from '@angular/cdk/scrolling'
+		at imports section
+			imports: [
+ 			   ScrollingModule,
+ 			 ],
+ 
+	at component.html
+		 <cdk-virtual-scroll-viewport class="viewport-section"  itemSize="100">
+                    <div class="item-section" *cdkVirtualFor="let ply of players">
+                        <h2>{{ply.pname}}</h2>
+                        <h4>{{ply.pcountry}}</h4>
+                        <h4>{{ply.page}}</h4>
+                    </div>
+                </cdk-virtual-scroll-viewport>
+	at Component.css
+		.viewport-section {
+    			height: 200px;
+   			width: 100%;
+  			}
+	linkRefrence : https://www.code-sample.com/2018/11/angular-7-virtual-scrolling.html
+
+
+DragDropModule
+	steps 
+	npm install @angular/material @angular/cdk --save 
+	At Appmodule.ts 
+		import { DragDropModule } from '@angular/cdk/drag-drop';
+		at imports Section
+		imports: [
+    			DragDropModule, ],
+
+	at component.html
+		
+		<div class="drag-box" style="width:300px; border: 1px solid black" cdkDrag>
+			This is Drag Data Example 
+		</div>
+
+	Ex2					
+	at component.html
+		<div class="box-list" cdkDropList (cdkDropListDropped)="drop($event)">
+		  <div class="drag-box" *ngFor="let customer of customers" cdkDrag>
+			    {{customer.name}}
+		  </div>
+		</div>
+	at component.ts
+		
+ 		drop(event: CdkDragDrop<string[]>) {
+    			moveItemInArray(this.customers, event.previousIndex, event.currentIndex);
+  		}
+
+	linkRefrence : https://grokonez.com/frontend/angular/angular-7/angular-7-drag-and-drop-example-angular-material-cdk
+
+Budget Bundles
+	used to set the size of the bundles at the serve and build commands . 
+
+   at angular.json 
+	{"apps":[{
+		"budgets": [{
+  		"type": "initial",
+  		"maximumWarning": "200kb",
+ 		 "maximumError": "300kb"
+		}],
+	}
+
+	* by default warning at 2MB and maxerror : 5MB
+
+DoBootstrap 
+	can boostrap a component at appmodule.ts file basing on event 
+	Ex:
+	class AppModule implements DoBootstrap {
+		ngDoBootstrap(appRef: ApplicationRef) {
+		appRef.bootstrap(DisplayComponet);
+			
+  		}
+	}
+
+
+Deploy Angular APP
+-------------------------
+
+at polyfills.ts  uncoment all the required imports statements 
+
+ng build --prod 
+
+then copy the dist folder files and dump into u r site location 
+
+

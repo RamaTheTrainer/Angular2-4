@@ -1,0 +1,304 @@
+Base Service
+--------------------------------------------------
+export enum RequestType {
+    GET = 'GET',
+    POST = 'POST',
+    DELETE = 'DELETE',
+    PUT = 'GET',
+    FORMDATA = 'FORMDATA'
+}
+
+export class BaseService {
+  constructor(private httpClient: HttpClient) {
+  }
+
+  Execute<T>(requestType: RequestType, relativeURL: string, endpoint: string, data: any): Observable<T> {
+    switch (requestType) {
+
+      case RequestType.GET:
+        return this.httpClient.get<T>(environment[endpoint] + relativeURL);
+
+      case RequestType.POST:
+        return this.httpClient.post<T>(environment[endpoint] + relativeURL, data);
+
+      case RequestType.DELETE:
+        return this.httpClient.delete<T>(environment[endpoint] + relativeURL);
+    }
+  }
+}
+----------------------------------------------------------
+Dailogs
+--------------------------------------------------------------
+export enum DialogEnum {
+    Confirm,
+    Cancel
+  }
+export interface IDialogModel {
+  TittleText: string;
+  BodyText: string;
+  isShow: boolean;
+}
+
+
+@Component({
+  selector: 'app-cancel-dialog',
+  templateUrl: './cancel-dialog.component.html'
+})
+export class CancelDialogComponent implements OnInit {
+  constructor(
+    public dialogRef: MatDialogRef<CancelDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: IDialogModel) {
+    this.dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+  }
+
+  onCloseConfirm() {
+    this.dialogRef.close(DialogEnum.Confirm);
+  }
+  onCloseCancel() {
+    this.dialogRef.close(DialogEnum.Cancel);
+  }
+
+}
+
+<i class="fa fa-facebook font50"></i>
+<h1 mat-dialog-title>{{dialogData.TittleText}}</h1>
+<mat-dialog-content>
+  {{dialogData.BodyText}}
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="onCloseConfirm()" class="btn btn-primary">Ok</button>
+</mat-dialog-actions>
+
+
+
+@Component({
+  selector: 'app-confirm-dialog',
+  templateUrl: './confirm-dialog.component.html',
+  styleUrls: ['./confirm-dialog.component.scss']
+})
+export class ConfirmDialogComponent implements OnInit {
+
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: IDialogModel, router: Router) {
+    router.events.subscribe(val => { if (val instanceof NavigationEnd) {
+      this.dialogRef.close();
+    }});
+
+    this.dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+  }
+  onCloseConfirm() {
+    this.dialogRef.close(DialogEnum.Confirm);
+  }
+  onCloseCancel() {
+    this.dialogRef.close(DialogEnum.Cancel);
+  }
+
+}
+
+<div class="pt30 pb30 pop_dialog" style="background:#ffffff;">
+  <div class="swal2-icon swal2-warning pulse-warning text-center line-height50" style="display: block;">
+    <div class="font50 pt15">!</div>
+  </div>
+  <div class="swal2-icon swal2-success" style="display: none;">
+    <span class="line tip"></span>
+    <span class="line long"></span>
+    <div class="placeholder"></div>
+    <div class="fix"></div>
+  </div>
+  <img class="swal2-image" style="display: none;" alt="message">
+  <h2 align="center" class="font20 font500">{{dialogData.BodyText}}</h2>
+  <div align="center" *ngIf="dialogData.isShow">
+    <button mat-button (click)="onCloseCancel()" class="mr30 swal2-cancel btn btn-danger">Cancel</button>
+    <button mat-button (click)="onCloseConfirm()" class="swal2-confirm btn btn-success">Confirm</button>
+  </div>
+  <div align="center" *ngIf="!dialogData.isShow">
+    <button mat-button (click)="onCloseConfirm()" class="swal2-cancel btn btn-danger">Ok</button>
+  </div>
+</div>
+
+
+
+export class DisplayMessageialogComponent implements OnInit {
+
+  constructor(
+    public dialogRef: MatDialogRef<DisplayMessageialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: IDialogModel, router: Router) {
+    router.events.subscribe(val => {
+      if (val instanceof NavigationEnd) {
+        this.dialogRef.close();
+      }
+    });
+
+    this.dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+  }
+  close() {
+    this.dialogRef.close(DialogEnum.Cancel);
+  }
+
+}
+
+<div class="pop_dialog">
+    <div class="position-relative">
+        <div class="PopCloseIcon" (click)="close()"><i class="material-icons">close</i></div>
+    </div>
+    <div class="swal2-icon swal2-warning pulse-warning text-center line-height50" *ngIf="!dialogData.isShow">
+        <div class="font50 pt15">!</div>
+    </div>
+    <div class="swal2-icon pulse-success text-center line-height50" *ngIf="dialogData.isShow">
+        <div class="font50 pt15">
+            <img src="assets/img/success.png" alt="success"/>
+        </div>
+    </div>
+    <h2 align="center" class="font20 font500" [innerHTML]='dialogData.BodyText'></h2>
+</div>
+
+
+export class ErrorDialogComponent implements OnInit {
+
+  constructor(
+    public dialogRef: MatDialogRef<ErrorDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: IDialogModel, router: Router) {
+    router.events.subscribe(val => { if (val instanceof NavigationEnd) {
+      this.dialogRef.close();
+    }});
+    this.dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+  }
+
+  onCloseConfirm() {
+    this.dialogRef.close(DialogEnum.Confirm);
+  }
+
+}
+
+<div class="pt30 pb30 pop_dialog" style="background:#ffffff;">
+    <div class="swal2-icon swal2-warning pulse-warning text-center line-height50">
+        <div class="font50 pt15">x</div>
+    </div>
+    <h2 align="center" class="font20 font500">{{dialogData.BodyText}}</h2>
+    <div align="center">
+        <button mat-button (click)="onCloseConfirm()" class="swal2-confirm btn btn-danger">OK</button>
+    </div>
+</div>
+
+
+export class SucessDialogComponent implements OnInit {
+
+  constructor(
+    public dialogRef: MatDialogRef<SucessDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: IDialogModel, router: Router) {
+    router.events.subscribe(val => { if (val instanceof NavigationEnd) {
+      this.dialogRef.close();
+    }});
+
+    this.dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+  }
+
+  onCloseConfirm() {
+    this.dialogRef.close(DialogEnum.Confirm);
+  }
+  onCloseCancel() {
+    this.dialogRef.close(DialogEnum.Cancel);
+  }
+}
+
+<div class="pt30 pb30 pop_dialog" style="background:#ffffff;">
+    <div class="swal2-icon swal2-warning pulse-warning text-center line-height50" *ngIf="!dialogData.isShow">
+        <div class="font50 pt15">!</div>
+    </div>
+    <div class="swal2-icon pulse-success text-center line-height50" *ngIf="dialogData.isShow">
+        <div class="font50 pt15">
+            <img src="assets/img/success.png" alt="success"/>
+        </div>
+    </div>
+    <h2 align="center" class="font20 font500" [innerHTML]='dialogData.BodyText'></h2>
+    <div align="center" *ngIf="dialogData.isShow">
+        <button mat-button (click)="onCloseConfirm()"
+            class="swal2-confirm btn btn-success">{{dialogData.TittleText.toLowerCase() == 'logout' ? 'Login' : 'OK'}}</button>
+    </div>
+    <div align="center" *ngIf="!dialogData.isShow">
+        <button mat-button (click)="onCloseConfirm()"
+            class="swal2-confirm btn btn-danger">{{dialogData.TittleText.toLowerCase() == 'logout' ? 'Login' : 'OK'}}</button>
+    </div>
+</div>
+
+
+export class DialogService {
+  constructor(public dialog: MatDialog, public appMessagesService: AppMessagesService) {
+  }
+
+  getSucessDialog(tittle: string, bodyText: string, IsShow: boolean) {
+    return this.dialog.open(SucessDialogComponent, {
+      data: { TittleText: tittle, BodyText: bodyText, isShow: IsShow }
+    });
+  }
+
+  getCancelDialog(tittle: string, bodyText: string, IsShow: boolean) {
+    return this.dialog.open(CancelDialogComponent, {
+      data: { TittleText: tittle, BodyText: bodyText, isShow: IsShow }
+    });
+  }
+
+  getConfirmDialog(tittle: string, bodyText: string, IsShow: boolean) {
+    return this.dialog.open(ConfirmDialogComponent, {
+      data: { TittleText: tittle, BodyText: bodyText, isShow: IsShow }
+    });
+  }
+
+  getConfirmDialogForReset() {
+    return this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        TittleText: 'Confirmation', BodyText: this.appMessagesService.appStaticMessages.AppLevel.DiscardChangesConfirmation,
+        isShow: true
+      }
+    });
+  }
+
+  getSucessDialogBox() {
+    return this.dialog.open(SucessDialogComponent, {
+      data: { TittleText: 'Success', BodyText: this.appMessagesService.appStaticMessages.AppLevel.DetailSaveSuccess, isShow: true }
+    });
+  }
+
+  getErrorDialogBox() {
+    return this.dialog.open(ErrorDialogComponent, {
+      data: { BodyText: 'Unexpected error encountered' }
+    });
+  }
+
+  getErrorDialogBoxWithMessage(message) {
+    return this.dialog.open(ErrorDialogComponent, {
+      data: { BodyText: message }
+    });
+  }
+
+  getAlertDialogToRemoveUser(user: string, role: string) {
+    return this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        TittleText: 'Confirmation', BodyText: this.appMessagesService.appStaticMessages.AppLevel.RemoveUserRoleConfirmation + user
+          + ' from ' + role + ' role.', isShow: true
+      }
+    });
+  }
+
+  displayMessageBodyDialog(message: string, IsShow: boolean) {
+    return this.dialog.open(DisplayMessageialogComponent, {
+      data: { BodyText: message, isShow: IsShow }
+    });
+  }
+}
